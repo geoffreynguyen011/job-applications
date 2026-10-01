@@ -10,7 +10,16 @@ export type user = {
 export type applications = {
     id: number;
     company_name: string;
+    job_posting: number;
+}
+
+export type job_applications = {
+    id: number;
+    company_name: string;
     job_description: string;
+    job_title: string;
+    availability: string;
+    job_length: string;
     location: string;
     currency: string;
     minimum_pay: number;

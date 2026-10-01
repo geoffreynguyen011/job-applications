@@ -16,6 +16,9 @@ export default function DashboardLayout({
           <Link href="/dashboard/users" className="rounded px-3 py-2 hover:bg-gray-100">
             Users
           </Link>
+          <Link href="/dashboard/applications" className="rounded px-3 py-2 hover:bg-gray-100">
+            Applications
+          </Link>
           <Link href="/dashboard/settings" className="rounded px-3 py-2 hover:bg-gray-100">
             Settings
           </Link>
