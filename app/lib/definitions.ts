@@ -5,6 +5,16 @@ export type user = {
     email: string;
     password: string;
     date_created: string;
+    degree: string;
+    field_of_study: string;
+    university: string;
+    location: string;
+    summary: string;
+}
+
+export type company = {
+    id: number;
+    name: string;
 }
 
 export type applications = {
@@ -13,7 +23,7 @@ export type applications = {
     job_posting: number;
 }
 
-export type job_applications = {
+export type job_postings = {
     id: number;
     company_name: string;
     job_description: string;
@@ -28,11 +38,9 @@ export type job_applications = {
     date_closed: string;
 }
 
-export type jobs_applied = {
+export type submitted_applications = {
     user_id: number;
     job_description_id: number;
-    first_name: string;
-    last_name: string;
     application_status: "in_consideration" | "accepted" | "declined";
     date_applied: string;
 }

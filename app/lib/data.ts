@@ -1,7 +1,7 @@
 import { pool } from "@/app/lib/db";
 import type { RowDataPacket } from "mysql2";
 
-export async function fetchApplications() {
+export async function fetchJobPostings() {
   try {
     const [rows] = await pool.query<RowDataPacket[]>(`
     SELECT
@@ -26,5 +26,9 @@ export async function fetchApplications() {
   } catch (error) {
     throw new Error('Failed to fetch data for applications.');
   }
+}
+
+export async function fetchApplications() {
+
 }
 
