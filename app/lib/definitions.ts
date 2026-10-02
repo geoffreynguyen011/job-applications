@@ -36,6 +36,7 @@ export type job_postings = {
     maximum_pay: number;
     date_posted: string;
     date_closed: string;
+    public_id_posting: string;
 }
 
 export type submitted_applications = {

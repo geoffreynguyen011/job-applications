@@ -19,6 +19,12 @@ export default function DashboardLayout({
           <Link href="/dashboard/applications" className="rounded px-3 py-2 hover:bg-gray-100">
             Applications
           </Link>
+          <Link href="/dashboard/job-postings" className="rounded px-3 py-2 hover:bg-gray-100">
+            Job Postings
+          </Link>
+          <Link href="/dashboard/job-postings/create-job-posting" className="rounded px-3 py-2 hover:bg-gray-100">
+            Create Job Postings
+          </Link>
           <Link href="/dashboard/settings" className="rounded px-3 py-2 hover:bg-gray-100">
             Settings
           </Link>
