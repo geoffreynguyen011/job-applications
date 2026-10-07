@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { createApplication, type FormState } from "./actions";
+import { createJobPosting, type FormState } from "./actions";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "INR"];
 const jobLength = ["Contract", "Salary"];
@@ -11,9 +11,9 @@ const inputClass =
   "mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500";
 const labelClass = "block text-sm font-medium text-gray-700";
 
-export default function NewApplicationPage() {
+export default function NewJobPostingPage() {
   const [state, formAction, pending] = useActionState<FormState, FormData>(
-    createApplication,
+    createJobPosting,
     {}
   );
   const v = state.values ?? {};
@@ -65,18 +65,18 @@ export default function NewApplicationPage() {
         </div>
 
         <div>
-          <label htmlFor="job-title" className={labelClass}>
+          <label htmlFor="job_title" className={labelClass}>
             Job Title{" "}
             <span className="required">*</span>
           </label>
           <input
-            id="job-title"
-            name="job-title"
+            id="job_title"
+            name="job_title"
             type="text"
             maxLength={150}
             required
             placeholder="e.g. Software Engineer"
-            defaultValue={v.softwareengineer}
+            defaultValue={v.job_title}
             className={inputClass}
           />
         </div>  
@@ -98,13 +98,13 @@ export default function NewApplicationPage() {
         </div>  
         
         <div>
-            <label htmlFor="job-length" className={labelClass}>
+            <label htmlFor="job_length" className={labelClass}>
               Contract or salaried?
             <span className="required">*</span>
             </label>
             <select
-              id="job-length"
-              name="job-length"
+              id="job_length"
+              name="job_length"
               required
               defaultValue={v.salaried}
               className={inputClass}
@@ -198,7 +198,7 @@ export default function NewApplicationPage() {
             {pending ? "Saving..." : "Create job posting"}
           </button>
           <Link
-            href="/dashboard/applications"
+            href="/dashboard/JobPostings"
             className="text-sm text-gray-600 hover:underline"
           >
             Cancel

@@ -29,6 +29,14 @@ export async function fetchJobPostings() {
 }
 
 export async function fetchApplications() {
-
+    try {
+        // jp = job posting
+        // u = users
+        // c = company
+        const {fields} = await pool.query<RowDataPacket[]>(`
+            SELECT
+                c.name,
+                jp.`)
+    }
 }
 

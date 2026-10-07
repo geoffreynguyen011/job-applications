@@ -57,7 +57,7 @@ async function main() {
       company_id INT NOT NULL,
       job_description TEXT NOT NULL,
       job_title VARCHAR(150) NOT NULL,
-      availability VARCHAR(50) NOT NULL,
+      availability VARCHAR(50) NULL,
       job_length VARCHAR(50) NOT NULL,
       location VARCHAR(150) NOT NULL,
       currency CHAR(3) NOT NULL,
