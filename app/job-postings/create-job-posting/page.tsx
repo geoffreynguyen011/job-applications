@@ -21,7 +21,6 @@ export default function NewJobPostingPage() {
   return (
     <div className="max-w-2xl">
       <h1 className="mb-6 text-2xl font-bold">Create Job Posting</h1>
-
       <form
         action={formAction}
         className="space-y-5 rounded-lg border bg-white p-6 shadow-sm"
@@ -31,7 +30,6 @@ export default function NewJobPostingPage() {
             {state.error}
           </p>
         )}
-
         <div>
           <label htmlFor="job_description" className={labelClass}>
             Job description{" "}
