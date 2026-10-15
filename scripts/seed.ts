@@ -47,7 +47,9 @@ async function main() {
   await connection.query(`
     CREATE TABLE company (
       id INT AUTO_INCREMENT PRIMARY KEY,
-      name VARCHAR(150) NOT NULL UNIQUE
+      name VARCHAR(150) NOT NULL UNIQUE,
+      employee_count VARCHAR(100) NULL,
+      description VARCHAR(500) NULL
     )
   `);
 

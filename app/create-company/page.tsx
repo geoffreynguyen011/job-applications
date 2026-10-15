@@ -10,6 +10,11 @@ export default function CreateCompanyPage() {
     {}
     );
     const v = state.values ?? {};
+    const inputClass =
+    "mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500";
+    const labelClass = "block text-sm font-medium text-gray-700";
+    const employeeCount = ["Less than 50", "50-200", "200-500", "500+"]
+
     return (
         <div className="container">
             <h1 className="mb-6 text-2xl font-bold">Create New Company</h1>
@@ -24,7 +29,7 @@ export default function CreateCompanyPage() {
             )}
 
                 <div>
-                    <label htmlFor="name">
+                    <label htmlFor="name" className={labelClass}>
                     Company name{" "}
                     <span className="required">*</span>
                     </label>
@@ -38,7 +43,40 @@ export default function CreateCompanyPage() {
                         />
                     </div>
 
+                </div>
+                <div>
+                    <label htmlFor="name" className={labelClass}>
+                    Number of employees{" "}
+                    <span className="font-normal text-gray-400">(optional)</span>
+                    </label>
+                    <select
+                    id="employee_count"
+                    name="employee_count"
+                    defaultValue={v.employee_count}
+                    className={inputClass}
+                    >
+                    {employeeCount.map((c) => (
+                        <option key={c} value={c}>
+                        {c}
+                        </option>
+                    ))}
+                    </select>
+                </div>                
+
+                <div>
+                    <label htmlFor="description" className={labelClass}>
+                        Description of company{" "}
+                        <span className="font-normal text-gray-400">(optional)</span>
+                    </label>
+                    <div>
+                        <textarea
+                        id="company_description"
+                        name="company_description"
+                        rows={3}
+                        defaultValue={v.company_description}
+                        />
                     </div>
+                </div>
 
                 <div className="flex items-center gap-3 pt-2">
                 <button

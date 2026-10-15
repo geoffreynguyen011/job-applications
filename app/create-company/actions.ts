@@ -14,7 +14,9 @@ export async function createCompany(
 ): Promise<FormState> {
   const get = (key: string) => String(formData.get(key) ?? "").trim();
     const values = {
-        company_name: get("name")
+        company_name: get("name"),
+        employee_count: get("employee_count"),
+        company_description: get("company_description")
     }
 
   // --- Validation ---
@@ -27,10 +29,12 @@ export async function createCompany(
     // INSERT COMPANY NAME LATER
     await pool.query(
       `INSERT INTO company 
-        (name)
-       VALUES (?)`,
+        (name, employee_count, company_description)
+       VALUES (?, ?, ?)`,
       [
-        values.company_name
+        values.company_name,
+        values.employee_count,
+        values.company_description
       ]
     );
   } catch (err) {
