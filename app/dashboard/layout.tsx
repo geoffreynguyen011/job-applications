@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LogoutButton from "@/app/components/logout-button";
 
 export default function DashboardLayout({
   children,
@@ -29,6 +30,9 @@ export default function DashboardLayout({
             Settings
           </Link>
         </nav>
+        <div className="mt-6 border-t pt-4">
+          <LogoutButton />
+        </div>
       </aside>
       <main className="flex-1 p-8">{children}</main>
     </div>

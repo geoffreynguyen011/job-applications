@@ -1,6 +1,7 @@
 "use server";
 
 import { pool } from "@/app/lib/db";
+import { getCompanyAdminUserId } from "@/app/lib/auth";
 import { redirect } from "next/navigation";
 
 export type FormState = {
@@ -12,36 +13,48 @@ export async function createCompany(
   _prev: FormState,
   formData: FormData
 ): Promise<FormState> {
-  const get = (key: string) => String(formData.get(key) ?? "").trim();
-    const values = {
-        company_name: get("name"),
-        employee_count: get("employee_count"),
-        company_description: get("company_description")
-    }
+  const userId = await getCompanyAdminUserId();
+  if (!userId) {
+    return { error: "Only company administrators can create companies." };
+  }
 
-  // --- Validation ---
-  if (!values.company_name) {
+  const get = (key: string) => String(formData.get(key) ?? "").trim();
+  const values = {
+    name: get("name"),
+    employee_count: get("employee_count"),
+    company_description: get("company_description"),
+  };
+
+  if (!values.name) {
     return { error: "Please provide a company name.", values };
   }
 
-  // --- Insert ---
+  const conn = await pool.getConnection();
   try {
-    // INSERT COMPANY NAME LATER
-    await pool.query(
-      `INSERT INTO company 
-        (name, employee_count, company_description)
-       VALUES (?, ?, ?)`,
-      [
-        values.company_name,
-        values.employee_count,
-        values.company_description
-      ]
+    await conn.beginTransaction();
+
+    const [result]: any = await conn.query(
+      `INSERT INTO company (name, employee_count, description) VALUES (?, ?, ?)`,
+      [values.name, values.employee_count || null, values.company_description || null]
     );
-  } catch (err) {
+
+    // The creator becomes this company's administrator
+    await conn.query(
+      "INSERT INTO company_admins (user_id, company_id) VALUES (?, ?)",
+      [userId, result.insertId]
+    );
+
+    await conn.commit();
+  } catch (err: any) {
+    await conn.rollback();
+    if (err.code === "ER_DUP_ENTRY") {
+      return { error: "A company with that name already exists.", values };
+    }
     console.error(err);
-    return { error: "Something went wrong with saving the name.", values };
+    return { error: "Something went wrong saving the company.", values };
+  } finally {
+    conn.release();
   }
 
-  // redirect() must be called outside try/catch
-  redirect("/");
+  redirect("/dashboard");
 }
