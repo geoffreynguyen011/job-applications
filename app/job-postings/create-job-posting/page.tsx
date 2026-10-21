@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { createJobPosting, type FormState } from "./actions";
+import { requireRole } from "@/app/lib/auth";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "INR"];
 const jobLength = ["Contract", "Salary"];
@@ -11,7 +12,8 @@ const inputClass =
   "mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500";
 const labelClass = "block text-sm font-medium text-gray-700";
 
-export default function NewJobPostingPage() {
+export default async function NewJobPostingPage() {
+  await requireRole(["recruiter", "admin", "company_admin"]);
   const [state, formAction, pending] = useActionState<FormState, FormData>(
     createJobPosting,
     {}

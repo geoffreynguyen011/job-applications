@@ -20,6 +20,17 @@ export async function proxy(req: NextRequest) {
   return NextResponse.next();
 }
 
+// export const config = {
+//   matcher: ["/dashboard/:path*"],
+// };
+
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/users/:path*",
+    "/applications/:path*",
+    "/job-postings/:path*",
+    "/settings/:path*",
+    "/create-company",
+  ],
 };
