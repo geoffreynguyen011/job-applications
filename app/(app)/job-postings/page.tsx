@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { pool } from "@/app/lib/db";
 import type { RowDataPacket } from "mysql2";
 
@@ -20,6 +21,7 @@ export default async function JobPostingsPage() {
   const [postings] = await pool.query<RowDataPacket[]>(`
     SELECT
       jp.id,
+      jp.public_id,
       c.name AS company_name,
       jp.job_title,
       jp.job_description,
@@ -41,12 +43,6 @@ export default async function JobPostingsPage() {
     !closed || new Date(closed) >= today;
 
   const openCount = postings.filter((p) => isOpen(p.date_closed)).length;
-
-//   const stats = [
-//     { label: "Total Postings", value: postings.length },
-//     { label: "Open", value: openCount },
-//     { label: "Closed", value: postings.length - openCount },
-//   ];
 
   return (
     <div>
@@ -74,6 +70,7 @@ export default async function JobPostingsPage() {
               <th className="p-3">Posted</th>
               <th className="p-3">Closes</th>
               <th className="p-3">Status</th>
+              <th className="p-3"></th>
             </tr>
           </thead>
           <tbody>
@@ -103,13 +100,18 @@ export default async function JobPostingsPage() {
                   </span>
                 </td>
                 <td className="p-3">
-                  <button className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Apply</button>
-                </td>
+                  <Link
+                    href={`/job-postings/${p.public_id}`}
+                    className="inline-block rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                  >
+                    Apply
+                  </Link>
+                </td>              
               </tr>
             ))}
             {postings.length === 0 && (
               <tr>
-                <td colSpan={9} className="p-6 text-center text-gray-500">
+                <td colSpan={10} className="p-6 text-center text-gray-500">
                   No job postings yet.
                 </td>
               </tr>

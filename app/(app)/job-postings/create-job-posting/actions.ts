@@ -2,6 +2,7 @@
 
 import { pool } from "@/app/lib/db";
 import { redirect } from "next/navigation";
+import { randomUUID } from "crypto";
 
 export type FormState = {
   error?: string;
@@ -59,6 +60,7 @@ export async function createJobPosting(
         currency, minimum_pay, maximum_pay, date_posted, date_closed)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
+        randomUUID(),
         values.company_id,
         values.job_description,
         values.job_title,

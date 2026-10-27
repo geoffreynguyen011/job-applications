@@ -3,6 +3,7 @@ import type { RowDataPacket } from "mysql2";
 import bcrypt from "bcryptjs";
 import fs from "fs";
 import path from "path";
+import { randomUUID } from "crypto";
 import dotenv from "dotenv";
 
 dotenv.config({ path: ".env.local" });
@@ -80,6 +81,7 @@ async function main() {
   await connection.query(`
     CREATE TABLE job_postings (
       id INT AUTO_INCREMENT PRIMARY KEY,
+      public_id CHAR(36) NOT NULL UNIQUE,
       company_id INT NOT NULL,
       job_description TEXT NOT NULL,
       job_title VARCHAR(150) NOT NULL,
@@ -182,18 +184,21 @@ async function main() {
   // ---------- Job postings ----------
   const postings = [
     [
+      randomUUID(),
       company("Acme Corp"),
       "Build and maintain customer-facing features with React and Next.js.",
       "Frontend Developer", "Full-time", "Permanent", "Remote",
       "USD", 90000, 120000, "2026-08-01", "2026-10-31",
     ],
     [
+      randomUUID(),      
       company("Globex"),
       "Design Node.js APIs and MySQL schemas for our data platform.",
       "Backend Engineer", "Full-time", "Permanent", "New York, NY",
       "USD", 110000, 145000, "2026-08-15", "2026-10-15",
     ],
     [
+      randomUUID(),
       company("Initech"),
       "Build internal tooling across the stack for our operations team.",
       "Full-Stack Developer Intern", "Part-time", "6 months", "London, UK",
@@ -202,7 +207,7 @@ async function main() {
   ];
   await connection.query(
     `INSERT INTO job_postings
-      (company_id, job_description, job_title, availability, job_length,
+      (public_id, company_id, job_description, job_title, availability, job_length,
        location, currency, minimum_pay, maximum_pay, date_posted, date_closed)
      VALUES ?`,
     [postings]
