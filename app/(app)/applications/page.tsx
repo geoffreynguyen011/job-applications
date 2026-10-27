@@ -35,6 +35,12 @@ export default async function ApplicationsPage() {
 
   return (
     <div>
+      <Link
+      href="/dashboard"
+      className="text-sm text-gray-600 hover:underline"
+    >
+      ← Back to dashboard
+    </Link>
       <h1 className="mb-6 text-2xl font-bold">
         {isApplicant ? "My Applications" : "Applications"}
       </h1>

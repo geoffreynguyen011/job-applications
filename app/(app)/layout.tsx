@@ -16,7 +16,7 @@ const links: { href: string; label: string; roles?: Role[] }[] = [
     label: "Create Job Postings",
     roles: RECRUITERS,
   },
-  { href: "/users", label: "Users", roles: ADMINS },
+  // { href: "/users", label: "Users", roles: ADMINS },
   { href: "/settings", label: "Settings", roles: ADMINS },
 ];
 

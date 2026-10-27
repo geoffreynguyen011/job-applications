@@ -35,22 +35,32 @@ export default async function JobPostingDetailPage({
 
   const [rows] = await pool.query<RowDataPacket[]>(
     `SELECT
-       jp.id, jp.public_id, jp.job_title, jp.job_description, jp.availability,
-       jp.job_length, jp.location, jp.currency, jp.minimum_pay,
-       jp.maximum_pay, jp.date_posted, jp.date_closed,
-       c.name AS company_name,
-       c.employee_count,
-       c.description AS company_description
-     FROM job_postings jp
-     JOIN company c ON c.id = jp.company_id
-     WHERE jp.public_id = ?`,
-    [publicId]
+      jp.id, jp.public_id, jp.job_title, jp.job_description, jp.availability,
+      jp.job_length, jp.location, jp.currency, jp.minimum_pay,
+      jp.maximum_pay, jp.date_posted, jp.date_closed,
+      c.name AS company_name,
+      c.employee_count,
+      c.description AS company_description,
+      sa.application_status AS my_status,
+      sa.date_applied AS my_date_applied
+    FROM job_postings jp
+    JOIN company c ON c.id = jp.company_id
+    LEFT JOIN submitted_applications sa
+      ON sa.job_description_id = jp.id AND sa.applicant_id = ?
+    WHERE jp.public_id = ?`,
+    [user.id, publicId]
   );
 
   const p = rows[0];
   if (!p) notFound();
 
   const isOpen = !p.date_closed || new Date(p.date_closed) >= new Date();
+
+  const statusLabels = {
+    in_consideration: "in consideration",
+    accepted: "accepted",
+    declined: "declined",
+  } as const;
 
   const details = [
     { label: "Location", value: p.location },
@@ -73,6 +83,17 @@ export default async function JobPostingDetailPage({
       <div className="mt-4 rounded-lg border bg-white p-6 shadow-sm">
         <div className="flex items-start justify-between gap-4">
           <div>
+            {p.my_status && (
+              <div className="mb-6 rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                ⚠ You already applied to this job on{" "}
+                {new Date(p.my_date_applied).toLocaleDateString()}. Your application
+                is currently{" "}
+                <span className="font-semibold">
+                  {statusLabels[p.my_status as keyof typeof statusLabels]}
+                </span>
+                .
+              </div>
+            )}
             <p className="text-sm font-medium text-gray-500">{p.company_name}</p>
             <h1 className="mt-1 text-2xl font-bold">{p.job_title}</h1>
           </div>

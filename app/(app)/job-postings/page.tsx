@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { pool } from "@/app/lib/db";
 import type { RowDataPacket } from "mysql2";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/app/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -18,25 +20,32 @@ function formatDate(d: Date | string | null) {
 }
 
 export default async function JobPostingsPage() {
-  const [postings] = await pool.query<RowDataPacket[]>(`
-    SELECT
-      jp.id,
-      jp.public_id,
-      c.name AS company_name,
-      jp.job_title,
-      jp.job_description,
-      jp.availability,
-      jp.job_length,
-      jp.location,
-      jp.currency,
-      jp.minimum_pay,
-      jp.maximum_pay,
-      jp.date_posted,
-      jp.date_closed
-    FROM job_postings jp
-    JOIN company c ON c.id = jp.company_id
-    ORDER BY jp.date_posted DESC
-  `);
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const [postings] = await pool.query<RowDataPacket[]>(
+    `SELECT
+       jp.id,
+       jp.public_id,
+       c.name AS company_name,
+       jp.job_title,
+       jp.availability,
+       jp.job_length,
+       jp.location,
+       jp.currency,
+       jp.minimum_pay,
+       jp.maximum_pay,
+       jp.date_posted,
+       jp.date_closed,
+       sa.application_status AS my_status,
+       sa.date_applied AS my_date_applied
+     FROM job_postings jp
+     JOIN company c ON c.id = jp.company_id
+     LEFT JOIN submitted_applications sa
+       ON sa.job_description_id = jp.id AND sa.applicant_id = ?
+     ORDER BY jp.date_posted DESC`,
+    [user.id]
+  );
 
   const today = new Date();
   const isOpen = (closed: Date | string | null) =>
@@ -100,12 +109,26 @@ export default async function JobPostingsPage() {
                   </span>
                 </td>
                 <td className="p-3">
-                  <Link
-                    href={`/job-postings/${p.public_id}`}
-                    className="inline-block rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                  >
-                    Apply
-                  </Link>
+                  {p.my_status ? (
+                    <div className="flex flex-col items-start gap-2">
+                      <span className="rounded bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800">
+                        ⚠ Already applied
+                      </span>
+                      <Link
+                        href={`/job-postings/${p.public_id}`}
+                        className="text-sm text-blue-600 hover:underline"
+                      >
+                        View
+                      </Link>
+                    </div>
+                  ) : (
+                    <Link
+                      href={`/job-postings/${p.public_id}`}
+                      className="inline-block rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                    >
+                      Apply
+                    </Link>
+                  )}
                 </td>              
               </tr>
             ))}

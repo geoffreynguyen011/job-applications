@@ -20,6 +20,12 @@ export default function CreateJobPostingPage() {
 
   return (
     <div className="max-w-2xl">
+      <Link
+        href="/job-postings"
+        className="text-sm text-gray-600 hover:underline"
+      >
+        ← Back to job postings
+      </Link>
       <h1 className="mb-6 text-2xl font-bold">Create Job Posting</h1>
       <form
         action={formAction}
