@@ -2,6 +2,7 @@ import "server-only";
 import type { RowDataPacket } from "mysql2";
 import { pool } from "@/app/lib/db";
 import { getSession } from "@/app/lib/session";
+import type { Role } from "@/app/lib/roles";
 import { redirect, forbidden } from "next/navigation";
 
 // Can this user create companies? (company administrators only)
@@ -28,13 +29,6 @@ export async function isCompanyAdmin(companyId: number): Promise<boolean> {
   );
   return rows.length > 0;
 }
-
-export type Role =
-  | "admin"
-  | "company_admin"
-  | "recruiter"
-  | "hiring_manager"
-  | "applicant";
 
 export async function getCurrentUser(): Promise<{
   id: number;

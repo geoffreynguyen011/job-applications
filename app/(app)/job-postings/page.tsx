@@ -42,6 +42,7 @@ export default async function JobPostingsPage({
     type: one("type"),
     location: one("location"),
     title: one("title"),
+    company: one("company"),
   };
 
   // Build a parameterized WHERE clause; user input never goes into the SQL text
@@ -73,6 +74,11 @@ export default async function JobPostingsPage({
   if (f.location) {
     where.push("jp.location LIKE ?");
     params.push(`%${f.location.replace(/[\\%_]/g, "\\$&")}%`);
+  }
+
+  if (f.company) {
+    where.push("c.name LIKE ?");
+    params.push(`%${f.company.replace(/[\\%_]/g, "\\$&")}%`);
   }
 
   const title = buildTitleFilter(f.title);
@@ -111,7 +117,14 @@ export default async function JobPostingsPage({
       <h1 className="mb-6 text-2xl font-bold">Job Postings</h1>
 
       <form method="get" className="mb-6 rounded-lg border bg-white p-4 shadow-sm">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <label htmlFor="company" className="block text-sm font-medium text-gray-700">Company</label>
+          <input id="company" name="company" type="text" defaultValue={f.company}
+            placeholder="e.g. Acme"
+            className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm" />
+        </div>
+
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-gray-700">Title</label>
             <input id="title" name="title" type="text" defaultValue={f.title}

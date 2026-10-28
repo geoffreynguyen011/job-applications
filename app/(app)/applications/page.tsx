@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/app/lib/auth";
 import { fetchApplications } from "@/app/lib/data";
+import { requireRole } from "@/app/lib/auth";
+import { VIEW_APPLICATIONS } from "@/app/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -27,9 +29,7 @@ function formatPay(currency: string, min: string, max: string) {
 }
 
 export default async function ApplicationsPage() {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
-
+  const user = await requireRole(VIEW_APPLICATIONS);
   const applications = await fetchApplications(user);
   const isApplicant = user.role === "applicant";
 

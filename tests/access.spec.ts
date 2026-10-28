@@ -10,11 +10,16 @@ const pages: { path: string; allowed: Role[]; heading: string }[] = [
     allowed: ["company_admin"],
     heading: "Create New Company",
   },
+  { 
+    path: "/applications", 
+    allowed: ["applicant"], 
+    heading: "My Applications" },
   {
     path: "/job-postings/create-job-posting",
-    allowed: ["recruiter", "admin", "company_admin"],
+    allowed: ["recruiter", "company_admin", "hiring_manager"],
     heading: "Create Job Posting",
   },
+  { path: "/job-postings", allowed: ALL_ROLES, heading: "Job Postings" },
 ];
 
 // Logged-out visitors
@@ -58,6 +63,7 @@ test.describe("sidebar", () => {
     test("hides staff links", async ({ page }) => {
       await page.goto("/dashboard");
       await expect(page.getByRole("link", { name: "Job Postings", exact: true })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Applications", exact: true })).toBeVisible();
       await expect(page.getByRole("link", { name: "Create Job Postings" })).toHaveCount(0);
       await expect(page.getByRole("link", { name: "Users" })).toHaveCount(0);
     });
@@ -69,6 +75,7 @@ test.describe("sidebar", () => {
     test("sees create job postings but not users", async ({ page }) => {
       await page.goto("/dashboard");
       await expect(page.getByRole("link", { name: "Create Job Postings" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Applications" })).toHaveCount(0);
       await expect(page.getByRole("link", { name: "Users" })).toHaveCount(0);
     });
   });

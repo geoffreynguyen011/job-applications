@@ -3,6 +3,8 @@
 import { pool } from "@/app/lib/db";
 import { redirect } from "next/navigation";
 import { randomUUID } from "crypto";
+import { requireRole } from "@/app/lib/auth";
+import { CREATE_JOB_POSTINGS } from "@/app/lib/roles";
 
 export type FormState = {
   error?: string;
@@ -13,8 +15,9 @@ const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "INR"];
 
 export async function createJobPosting(
   _prev: FormState,
-  formData: FormData
+formData: FormData
 ): Promise<FormState> {
+  await requireRole(CREATE_JOB_POSTINGS);
   const get = (key: string) => String(formData.get(key) ?? "").trim();
 
   const values = {

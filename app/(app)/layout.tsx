@@ -1,22 +1,19 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import LogoutButton from "@/app/components/logout-button";
-import { getCurrentUser, type Role } from "@/app/lib/auth";
+import { getCurrentUser } from "@/app/lib/auth";
+import {
+  VIEW_JOB_POSTINGS, VIEW_APPLICATIONS, CREATE_JOB_POSTINGS, type Role,
+} from "@/app/lib/roles";
 
 const ADMINS: Role[] = ["admin", "company_admin"];
-const RECRUITERS: Role[] = ["recruiter", ...ADMINS];
 
-// roles: who can see the link. Omit it to show the link to everyone.
 const links: { href: string; label: string; roles?: Role[] }[] = [
   { href: "/dashboard", label: "Overview" },
-  { href: "/applications", label: "Applications" },
-  { href: "/job-postings", label: "Job Postings" },
-  {
-    href: "/job-postings/create-job-posting",
-    label: "Create Job Postings",
-    roles: RECRUITERS,
-  },
-  // { href: "/users", label: "Users", roles: ADMINS },
+  { href: "/job-postings", label: "Job Postings", roles: VIEW_JOB_POSTINGS },
+  { href: "/applications", label: "Applications", roles: VIEW_APPLICATIONS },
+  { href: "/job-postings/create-job-posting", label: "Create Job Postings", roles: CREATE_JOB_POSTINGS },
+  { href: "/users", label: "Users", roles: ADMINS },
   { href: "/settings", label: "Settings", roles: ADMINS },
 ];
 
