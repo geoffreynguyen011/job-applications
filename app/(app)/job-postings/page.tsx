@@ -5,6 +5,7 @@ import { buildTitleFilter } from "@/app/lib/job-search";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/app/lib/auth";
 
+
 export const dynamic = "force-dynamic";
 
 function formatPay(currency: string, min: string, max: string) {
@@ -29,6 +30,8 @@ export default async function JobPostingsPage({
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+
+  const isApplicant = user.role === "applicant";
 
   const sp = await searchParams;
   const one = (k: string) => {
@@ -227,7 +230,14 @@ export default async function JobPostingsPage({
                   </span>
                 </td>
                 <td className="p-3">
-                  {p.my_status ? (
+                  {!isApplicant ? (
+                    <Link
+                      href={`/job-postings/${p.public_id}`}
+                      className="text-sm text-blue-600 hover:underline"
+                    >
+                      View
+                    </Link>
+                  ) : p.my_status ? (
                     <div className="flex flex-col items-start gap-2">
                       <span className="rounded bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800">
                         ⚠ Already applied
@@ -247,7 +257,7 @@ export default async function JobPostingsPage({
                       Apply
                     </Link>
                   )}
-                </td>              
+                </td>            
               </tr>
             ))}
             {postings.length === 0 && (

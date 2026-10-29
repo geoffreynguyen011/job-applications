@@ -56,12 +56,11 @@ formData: FormData
 
   // --- Insert ---
   try {
-    // INSERT COMPANY NAME LATER
     await pool.query(
-      `INSERT INTO job_postings 
-        (company_id, job_description, job_title, location, availability, job_length, 
-        currency, minimum_pay, maximum_pay, date_posted, date_closed)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO job_postings
+        (public_id, company_id, job_description, job_title, location, availability,
+        job_length, currency, minimum_pay, maximum_pay, date_posted, date_closed)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         randomUUID(),
         values.company_id,
@@ -74,7 +73,7 @@ formData: FormData
         min,
         max,
         date,
-        values.date_closed || null, // optional, stored as NULL if empty
+        values.date_closed || null,
       ]
     );
   } catch (err) {
