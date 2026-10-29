@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import type { RowDataPacket } from "mysql2";
 import { pool } from "@/app/lib/db";
 import { getCurrentUser } from "@/app/lib/auth";
+import ApplyForm from "./apply-form";
 
 export const dynamic = "force-dynamic";
 
@@ -131,6 +132,9 @@ export default async function JobPostingDetailPage({
         <p className="mt-1 whitespace-pre-line text-sm text-gray-700">
           {p.company_description || "No company description provided."}
         </p>
+        {user.role === "applicant" && !p.my_status && isOpen && (
+          <ApplyForm publicId={p.public_id} />
+        )}
       </div>
     </div>
   );
