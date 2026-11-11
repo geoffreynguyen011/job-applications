@@ -32,5 +32,6 @@ export const config = {
     "/job-postings/:path*",
     "/settings/:path*",
     "/create-company",
+    "/companies/:path*"
   ],
 };

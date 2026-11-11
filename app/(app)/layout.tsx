@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import LogoutButton from "@/app/components/logout-button";
 import { getCurrentUser } from "@/app/lib/auth";
 import {
-  VIEW_JOB_POSTINGS, REVIEW_APPLICATIONS, VIEW_APPLICATIONS, CREATE_JOB_POSTINGS, type Role,
+  VIEW_JOB_POSTINGS, REVIEW_APPLICATIONS, VIEW_APPLICATIONS, VIEW_COMPANIES, CREATE_JOB_POSTINGS, type Role,
 } from "@/app/lib/roles";
 
 const ADMINS: Role[] = ["admin", "company_admin"];
@@ -14,8 +14,9 @@ const links: { href: string; label: string; roles?: Role[] }[] = [
   { href: "/applications", label: "Applications", roles: VIEW_APPLICATIONS },
   { href: "/job-postings/create-job-posting", label: "Create Job Postings", roles: CREATE_JOB_POSTINGS },
   { href: "/users", label: "Users", roles: ADMINS },
+  { href: "/companies", label: "Companies", roles: VIEW_COMPANIES },
+  { href: "/review", label: "Review Applications", roles: REVIEW_APPLICATIONS },
   { href: "/settings", label: "Settings", roles: ADMINS },
-  { href: "/review", label: "Review Applications", roles: REVIEW_APPLICATIONS }
 ];
 
 export default async function DashboardLayout({
