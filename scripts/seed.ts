@@ -29,6 +29,7 @@ async function main() {
   await connection.query("DROP TABLE IF EXISTS company");
   await connection.query("DROP TABLE IF EXISTS applicants");
   await connection.query("DROP TABLE IF EXISTS users");
+  await connection.query("DROP TABLE IF EXISTS company_members");
 
   // ---------- Create tables ----------
 
@@ -73,6 +74,15 @@ async function main() {
       user_id INT NOT NULL,
       company_id INT NOT NULL,
       PRIMARY KEY (user_id, company_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (company_id) REFERENCES company(id) ON DELETE CASCADE
+    )
+  `);
+
+  await connection.query(`
+    CREATE TABLE company_members (
+      user_id INT PRIMARY KEY,
+      company_id INT NOT NULL,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY (company_id) REFERENCES company(id) ON DELETE CASCADE
     )
@@ -217,6 +227,14 @@ async function main() {
     userId("companyadmin@example.com"),
     company("Acme Corp"),
   ]);
+
+  await connection.query(
+    "INSERT INTO company_members (user_id, company_id) VALUES ?",
+    [[
+      [userId("recruiter@example.com"), company("Acme Corp")],
+      [userId("manager@example.com"), company("Acme Corp")],
+    ]]
+  );
 
   const [postingRows] = await connection.query<RowDataPacket[]>(
     "SELECT id, company_id, job_title FROM job_postings"

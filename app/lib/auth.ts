@@ -30,6 +30,18 @@ export async function isCompanyAdmin(companyId: number): Promise<boolean> {
   return rows.length > 0;
 }
 
+// Is this user a member or admin of this company?
+export async function canManageCompany(userId: number, companyId: number): Promise<boolean> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `SELECT 1 FROM company_members WHERE user_id = ? AND company_id = ?
+     UNION
+     SELECT 1 FROM company_admins WHERE user_id = ? AND company_id = ?
+     LIMIT 1`,
+    [userId, companyId, userId, companyId]
+  );
+  return rows.length > 0;
+}
+
 export async function getCurrentUser(): Promise<{
   id: number;
   firstName: string;
@@ -46,6 +58,17 @@ export async function getCurrentUser(): Promise<{
   if (!u) return null; // account was deleted
 
   return { id: u.id, firstName: u.first_name, role: u.user_sub_group as Role };
+}
+
+export async function getUserCompanyId(userId: number): Promise<number | null> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `SELECT company_id FROM company_members WHERE user_id = ?
+     UNION
+     SELECT company_id FROM company_admins WHERE user_id = ?
+     LIMIT 1`,
+    [userId, userId]
+  );
+  return rows[0]?.company_id ?? null;
 }
 
 export async function requireRole(allowed: Role[]) {

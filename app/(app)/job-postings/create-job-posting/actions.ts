@@ -3,7 +3,7 @@
 import { pool } from "@/app/lib/db";
 import { redirect } from "next/navigation";
 import { randomUUID } from "crypto";
-import { requireRole } from "@/app/lib/auth";
+import { requireRole, getUserCompanyId } from "@/app/lib/auth";
 import { CREATE_JOB_POSTINGS } from "@/app/lib/roles";
 
 export type FormState = {
@@ -14,14 +14,22 @@ export type FormState = {
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "INR"];
 
 export async function createJobPosting(
+  
   _prev: FormState,
 formData: FormData
 ): Promise<FormState> {
+  const user = await requireRole(CREATE_JOB_POSTINGS);
+
+  const companyId = await getUserCompanyId(user.id);
+  if (!companyId) {
+    return { error: "Your account isn't linked to a company yet." };
+  }
+
   await requireRole(CREATE_JOB_POSTINGS);
   const get = (key: string) => String(formData.get(key) ?? "").trim();
 
   const values = {
-    company_id: "2", // change value later
+    // company_id: "2", // change value later
     job_description: get("job_description"),
     job_title: get("job_title"),
     location: get("location"),
@@ -57,25 +65,25 @@ formData: FormData
   // --- Insert ---
   try {
     await pool.query(
-      `INSERT INTO job_postings
-        (public_id, company_id, job_description, job_title, location, availability,
-        job_length, currency, minimum_pay, maximum_pay, date_posted, date_closed)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        randomUUID(),
-        values.company_id,
-        values.job_description,
-        values.job_title,
-        values.location,
-        values.availability || null,
-        values.job_length,
-        values.currency,
-        min,
-        max,
-        date,
-        values.date_closed || null,
-      ]
-    );
+    `INSERT INTO job_postings
+      (public_id, company_id, job_description, job_title, location, availability,
+      job_length, currency, minimum_pay, maximum_pay, date_posted, date_closed)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      randomUUID(),
+      companyId,
+      values.job_description,
+      values.job_title,
+      values.location,
+      values.availability || null,
+      values.job_length,
+      values.currency,
+      min,
+      max,
+      date,
+      values.date_closed || null,
+    ]
+  );
   } catch (err) {
     console.error(err);
     return { error: "Something went wrong with saving the job posting.", values };
