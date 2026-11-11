@@ -96,24 +96,24 @@ export default async function JobPostingsPage({
 
   const [postings] = await pool.query<RowDataPacket[]>(
     `SELECT
-       jp.id, jp.public_id, c.name AS company_name, jp.job_title,
-       jp.availability, jp.job_length, jp.location, jp.currency,
-       jp.minimum_pay, jp.maximum_pay, jp.date_posted, jp.date_closed,
-       sa.application_status AS my_status,
-       sa.date_applied AS my_date_applied
-     FROM job_postings jp
-     JOIN company c ON c.id = jp.company_id
-     LEFT JOIN submitted_applications sa
-       ON sa.job_description_id = jp.id AND sa.applicant_id = ?
-     ${where.length ? "WHERE " + where.join(" AND ") : ""}
-     ORDER BY ${orderBy}`,
+      jp.id, jp.public_id, c.name AS company_name, jp.job_title,
+      jp.availability, jp.job_length, jp.location, jp.currency,
+      jp.minimum_pay, jp.maximum_pay, jp.date_posted, jp.date_closed,
+      (jp.date_closed IS NULL OR jp.date_closed >= CURDATE()) AS is_open,
+      sa.application_status AS my_status,
+      sa.date_applied AS my_date_applied
+    FROM job_postings jp
+    JOIN company c ON c.id = jp.company_id
+    LEFT JOIN submitted_applications sa
+      ON sa.job_description_id = jp.id AND sa.applicant_id = ?
+    ${where.length ? "WHERE " + where.join(" AND ") : ""}
+    ORDER BY ${orderBy}`,
     [user.id, ...params, ...(title ? title.params : [])]
   );
 
   const filtersActive = Object.values(f).some(Boolean);
-  const today = new Date();
-  const isOpen = (closed: Date | string | null) =>
-    !closed || new Date(closed) >= today;
+  // const today = new Date();
+  // const isOpen = Number(p.is_open) === 1;
 
   return (
     <div>
@@ -204,62 +204,65 @@ export default async function JobPostingsPage({
             </tr>
           </thead>
           <tbody>
-            {postings.map((p) => (
-              <tr key={p.id} className="border-b align-top last:border-0">
-                <td className="p-3 font-medium">{p.company_name}</td>
-                <td className="p-3">
-                  <div className="font-medium">{p.job_title}</div>
-                </td>
-                <td className="p-3">{p.availability}</td>
-                <td className="p-3">{p.job_length}</td>
-                <td className="p-3">{p.location}</td>
-                <td className="p-3 whitespace-nowrap">
-                  {formatPay(p.currency, p.minimum_pay, p.maximum_pay)}
-                </td>
-                <td className="p-3">{formatDate(p.date_posted)}</td>
-                <td className="p-3">{formatDate(p.date_closed)}</td>
-                <td className="p-3">
-                  <span
-                    className={`rounded-full px-2 py-1 text-xs font-medium ${
-                      isOpen(p.date_closed)
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {isOpen(p.date_closed) ? "Open" : "Closed"}
-                  </span>
-                </td>
-                <td className="p-3">
-                  {!isApplicant ? (
-                    <Link
-                      href={`/job-postings/${p.public_id}`}
-                      className="text-sm text-blue-600 hover:underline"
+            {postings.map((p) => {
+              const open = Number(p.is_open) === 1; // handles 1, "1", true
+
+              return (
+                <tr key={p.id} className="border-b align-top last:border-0">
+                  <td className="p-3 font-medium">{p.company_name}</td>
+                  <td className="p-3">
+                    <div className="font-medium">{p.job_title}</div>
+                  </td>
+                  <td className="p-3">{p.availability}</td>
+                  <td className="p-3">{p.job_length}</td>
+                  <td className="p-3">{p.location}</td>
+                  <td className="p-3 whitespace-nowrap">
+                    {formatPay(p.currency, p.minimum_pay, p.maximum_pay)}
+                  </td>
+                  <td className="p-3">{formatDate(p.date_posted)}</td>
+                  <td className="p-3">{formatDate(p.date_closed)}</td>
+                  <td className="p-3">
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${
+                        open ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
+                      }`}
                     >
-                      View
-                    </Link>
-                  ) : p.my_status ? (
-                    <div className="flex flex-col items-start gap-2">
-                      <span className="rounded bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800">
-                        ⚠ Already applied
-                      </span>
+                      {open ? "Open" : "Closed"}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    {isApplicant && open && !p.my_status ? (
+                      // The ONLY place an Apply button can render
                       <Link
                         href={`/job-postings/${p.public_id}`}
-                        className="text-sm text-blue-600 hover:underline"
+                        className="inline-block rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
                       >
-                        View
+                        Apply
                       </Link>
-                    </div>
-                  ) : (
-                    <Link
-                      href={`/job-postings/${p.public_id}`}
-                      className="inline-block rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                    >
-                      Apply
-                    </Link>
-                  )}
-                </td>            
-              </tr>
-            ))}
+                    ) : (
+                      <div className="flex flex-col items-start gap-2">
+                        {isApplicant && p.my_status && (
+                          <span className="rounded bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800">
+                            ⚠ Already applied
+                          </span>
+                        )}
+                        {isApplicant && !p.my_status && !open && (
+                          <span className="rounded bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+                            Applications closed
+                          </span>
+                        )}
+                        <Link
+                          href={`/job-postings/${p.public_id}`}
+                          className="text-sm text-blue-600 hover:underline"
+                        >
+                          View
+                        </Link>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
             {postings.length === 0 && (
               <tr>
                 <td colSpan={10} className="p-6 text-center text-gray-500">
