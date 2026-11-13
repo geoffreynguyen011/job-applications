@@ -25,11 +25,12 @@ async function main() {
   await connection.query("DROP TABLE IF EXISTS submitted_applications");
   await connection.query("DROP TABLE IF EXISTS applications");
   await connection.query("DROP TABLE IF EXISTS job_postings");
-  await connection.query("DROP TABLE IF EXISTS company_admins");
-  await connection.query("DROP TABLE IF EXISTS company");
-  await connection.query("DROP TABLE IF EXISTS applicants");
-  await connection.query("DROP TABLE IF EXISTS users");
   await connection.query("DROP TABLE IF EXISTS company_members");
+  await connection.query("DROP TABLE IF EXISTS company_admins");
+  await connection.query("DROP TABLE IF EXISTS interviews");
+  await connection.query("DROP TABLE IF EXISTS applicants");
+  await connection.query("DROP TABLE IF EXISTS company");
+  await connection.query("DROP TABLE IF EXISTS users");
 
   // ---------- Create tables ----------
 
@@ -128,6 +129,27 @@ async function main() {
       FOREIGN KEY (applicant_id) REFERENCES applicants(user_id) ON DELETE CASCADE,
       FOREIGN KEY (job_description_id) REFERENCES job_postings(id)
         ON DELETE CASCADE
+    )
+  `);
+
+    // drop before submitted applications
+  await connection.query(`
+    CREATE TABLE interviews (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      applicant_id INT NOT NULL,
+      job_posting_id INT NOT NULL,
+      scheduled_by INT NULL,
+      scheduled_at DATETIME NOT NULL,
+      duration_minutes INT NOT NULL DEFAULT 30,
+      format ENUM('video', 'phone', 'onsite') NOT NULL DEFAULT 'video',
+      location VARCHAR(255) NULL,
+      notes TEXT NULL,
+      status ENUM('scheduled', 'completed', 'cancelled') NOT NULL DEFAULT 'scheduled',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (applicant_id, job_posting_id)
+        REFERENCES submitted_applications(applicant_id, job_description_id)
+        ON DELETE CASCADE,
+      FOREIGN KEY (scheduled_by) REFERENCES users(id) ON DELETE SET NULL
     )
   `);
 

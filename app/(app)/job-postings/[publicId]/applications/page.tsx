@@ -4,6 +4,8 @@ import type { RowDataPacket } from "mysql2";
 import { pool } from "@/app/lib/db";
 import { requireRole, canManageCompany } from "@/app/lib/auth";
 import { REVIEW_APPLICATIONS } from "@/app/lib/roles";
+import ScheduleInterview from "./schedule-interview";
+import { cancelInterview } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -64,6 +66,21 @@ export default async function JobApplicationsPage({
      ORDER BY sa.date_applied DESC`,
     [job.id]
   );
+
+  const [interviewRows] = await pool.query<RowDataPacket[]>(
+    `SELECT id, applicant_id, scheduled_at, duration_minutes, format, location, notes, status
+    FROM interviews
+    WHERE job_posting_id = ? AND status <> 'cancelled'
+    ORDER BY scheduled_at`,
+    [job.id]
+    );
+    const interviewsByApplicant = new Map<number, RowDataPacket[]>();
+    for (const i of interviewRows) {
+        interviewsByApplicant.set(i.applicant_id, [
+            ...(interviewsByApplicant.get(i.applicant_id) ?? []),
+            i,
+        ]);
+    }
 
   const jobDetails = [
     { label: "Location", value: job.location },
@@ -145,6 +162,24 @@ export default async function JobApplicationsPage({
             <p className="whitespace-pre-line text-sm text-gray-700">
               {a.summary || "No summary provided."}
             </p>
+            {(interviewsByApplicant.get(a.id) ?? []).map((i) => (
+                <div key={i.id} className="mt-4 flex items-start justify-between gap-4 rounded border border-blue-200 bg-blue-50 p-3 text-sm">
+                    <div>
+                    <p className="font-medium text-blue-900">
+                        Interview: {new Date(i.scheduled_at).toLocaleString()} ({i.duration_minutes} min, {i.format})
+                    </p>
+                    {i.location && <p className="text-blue-800">{i.location}</p>}
+                    </div>
+                    {i.status === "scheduled" && (
+                    <form action={cancelInterview}>
+                        <input type="hidden" name="interview_id" value={i.id} />
+                        <button className="text-xs text-red-600 hover:underline">Cancel</button>
+                    </form>
+                    )}
+                </div>
+                ))}
+
+            <ScheduleInterview publicId={publicId} applicantId={a.id} />
           </div>
         ))}
 
