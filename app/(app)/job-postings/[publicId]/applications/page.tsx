@@ -68,7 +68,7 @@ export default async function JobApplicationsPage({
   );
 
   const [interviewRows] = await pool.query<RowDataPacket[]>(
-    `SELECT id, applicant_id, scheduled_at, duration_minutes, format, location, notes, status
+    `SELECT id, applicant_id, scheduled_at, duration_minutes, format, location, notes, status, applicant_response
     FROM interviews
     WHERE job_posting_id = ? AND status <> 'cancelled'
     ORDER BY scheduled_at`,
@@ -167,6 +167,11 @@ export default async function JobApplicationsPage({
                     <div>
                     <p className="font-medium text-blue-900">
                         Interview: {new Date(i.scheduled_at).toLocaleString()} ({i.duration_minutes} min, {i.format})
+                    </p>
+                    <p className="text-xs text-blue-800">
+                      {i.applicant_response === "accepted" ? "✓ Applicant confirmed"
+                        : i.applicant_response === "declined" ? "✗ Applicant declined"
+                        : "Waiting for applicant response"}
                     </p>
                     {i.location && <p className="text-blue-800">{i.location}</p>}
                     </div>

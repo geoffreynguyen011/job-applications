@@ -22,13 +22,13 @@ async function main() {
 
   // Drop child tables first, then parents
   await connection.query("DROP TABLE IF EXISTS jobs_applied"); // leftover from the old schema
-  await connection.query("DROP TABLE IF EXISTS submitted_applications");
   await connection.query("DROP TABLE IF EXISTS applications");
-  await connection.query("DROP TABLE IF EXISTS job_postings");
   await connection.query("DROP TABLE IF EXISTS company_members");
   await connection.query("DROP TABLE IF EXISTS company_admins");
   await connection.query("DROP TABLE IF EXISTS interviews");
+  await connection.query("DROP TABLE IF EXISTS submitted_applications");
   await connection.query("DROP TABLE IF EXISTS applicants");
+  await connection.query("DROP TABLE IF EXISTS job_postings");
   await connection.query("DROP TABLE IF EXISTS company");
   await connection.query("DROP TABLE IF EXISTS users");
 
@@ -145,6 +145,7 @@ async function main() {
       location VARCHAR(255) NULL,
       notes TEXT NULL,
       status ENUM('scheduled', 'completed', 'cancelled') NOT NULL DEFAULT 'scheduled',
+      applicant_response ENUM('pending', 'accepted', 'declined') NOT NULL DEFAULT 'pending',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (applicant_id, job_posting_id)
         REFERENCES submitted_applications(applicant_id, job_description_id)
@@ -283,6 +284,13 @@ async function main() {
       (applicant_id, job_description_id, application_status, date_applied)
      VALUES ?`,
     [submitted]
+  );
+
+  await connection.query(
+    `INSERT INTO interviews
+      (applicant_id, job_posting_id, scheduled_by, scheduled_at, duration_minutes, format, location)
+    VALUES (?, ?, ?, '2026-11-20 14:00:00', 45, 'video', 'https://meet.example.com/abc')`,
+    [userId("alice@example.com"), postingId("Frontend Developer"), userId("recruiter@example.com")]
   );
 
   console.log("Seeding complete.");
