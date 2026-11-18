@@ -3,8 +3,10 @@ import { redirect } from "next/navigation";
 import LogoutButton from "@/app/components/logout-button";
 import { getCurrentUser } from "@/app/lib/auth";
 import {
-  ALL_ROLES, VIEW_JOB_POSTINGS, REVIEW_APPLICATIONS, VIEW_APPLICATIONS, VIEW_COMPANIES, CREATE_JOB_POSTINGS, VIEW_USERS, type Role,
+  ALL_ROLES, VIEW_JOB_POSTINGS, REVIEW_APPLICATIONS, VIEW_APPLICATIONS, VIEW_COMPANIES, 
+  CREATE_JOB_POSTINGS, VIEW_USERS, ROLE_LABELS, type Role,
 } from "@/app/lib/roles";
+
 
 const ADMINS: Role[] = ["admin", "company_admin"];
 
@@ -50,7 +52,10 @@ return (
     </aside>
 
     <div className="flex flex-1 flex-col">
-      <header className="flex items-center justify-end border-b bg-white px-8 py-4">
+      <header className="flex items-center justify-end gap-3 border-b bg-white px-8 py-4">
+        <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+          {ROLE_LABELS[user.role]}
+        </span>
         <span className="text-sm text-gray-700">
           Welcome, <span className="font-semibold">{user.firstName}</span>
         </span>

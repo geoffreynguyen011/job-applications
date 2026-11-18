@@ -16,3 +16,10 @@ export const REVIEW_APPLICATIONS: Role[] = ["recruiter", "company_admin", "hirin
 export const VIEW_SETTINGS: Role[] = ALL_ROLES;
 export const VIEW_USERS: Role[] = ["admin"];
 export const VIEW_COMPANIES: Role[] = ["admin"];
+export const ROLE_LABELS: Record<Role, string> = {
+  admin: "Admin",
+  company_admin: "Company admin",
+  recruiter: "Recruiter",
+  hiring_manager: "Hiring manager",
+  applicant: "Applicant",
+};
