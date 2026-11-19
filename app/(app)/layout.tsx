@@ -4,7 +4,7 @@ import LogoutButton from "@/app/components/logout-button";
 import { getCurrentUser } from "@/app/lib/auth";
 import {
   ALL_ROLES, VIEW_JOB_POSTINGS, REVIEW_APPLICATIONS, VIEW_APPLICATIONS, VIEW_COMPANIES, 
-  CREATE_JOB_POSTINGS, VIEW_USERS, ROLE_LABELS, type Role,
+  CREATE_JOB_POSTINGS, VIEW_USERS, ROLE_LABELS, VIEW_PROFILE, type Role,
 } from "@/app/lib/roles";
 
 
@@ -12,6 +12,7 @@ const ADMINS: Role[] = ["admin", "company_admin"];
 
 const links: { href: string; label: string; roles?: Role[] }[] = [
   { href: "/dashboard", label: "Overview" },
+  { href: "/profile", label: "My Profile", roles: VIEW_PROFILE },
   { href: "/job-postings", label: "Job Postings", roles: VIEW_JOB_POSTINGS },
   { href: "/applications", label: "Applications", roles: VIEW_APPLICATIONS },
   { href: "/job-postings/create-job-posting", label: "Create Job Postings", roles: CREATE_JOB_POSTINGS },
@@ -56,9 +57,9 @@ return (
         <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
           {ROLE_LABELS[user.role]}
         </span>
-        <span className="text-sm text-gray-700">
+        <Link href="/profile" className="text-sm text-gray-700 hover:underline">
           Welcome, <span className="font-semibold">{user.firstName}</span>
-        </span>
+        </Link>
       </header>
       <main className="flex-1 p-8">{children}</main>
     </div>

@@ -10,6 +10,9 @@ export const ALL_ROLES: Role[] = [
 ];
 
 export const VIEW_JOB_POSTINGS: Role[] = ALL_ROLES;
+export const VIEW_PROFILE: Role[] = ALL_ROLES;
+export const SUMMARY_ROLES: Role[] = ["applicant", "recruiter", "hiring_manager", "company_admin"];
+export const PROFILE_PICTURE_ROLES: Role[] = ["applicant"]; // maybe change to all_roles later
 export const VIEW_APPLICATIONS: Role[] = ["applicant"];
 export const CREATE_JOB_POSTINGS: Role[] = ["recruiter", "company_admin", "hiring_manager"];
 export const REVIEW_APPLICATIONS: Role[] = ["recruiter", "company_admin", "hiring_manager"];

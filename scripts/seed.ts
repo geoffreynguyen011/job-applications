@@ -22,6 +22,9 @@ async function main() {
 
   // Drop child tables first, then parents
   await connection.query("DROP TABLE IF EXISTS jobs_applied"); // leftover from the old schema
+  await connection.query("DROP TABLE IF EXISTS profile_pictures");
+  await connection.query("DROP TABLE IF EXISTS work_experience");
+  await connection.query("DROP TABLE IF EXISTS education");
   await connection.query("DROP TABLE IF EXISTS applications");
   await connection.query("DROP TABLE IF EXISTS company_members");
   await connection.query("DROP TABLE IF EXISTS company_admins");
@@ -42,6 +45,7 @@ async function main() {
       last_name VARCHAR(100) NOT NULL,
       email VARCHAR(150) NOT NULL UNIQUE,
       password VARCHAR(255) NOT NULL,
+      summary TEXT NULL,
       user_sub_group ENUM('admin', 'company_admin', 'recruiter', 'hiring_manager', 'applicant')
   NOT NULL DEFAULT 'applicant',
       date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -57,6 +61,42 @@ async function main() {
       university VARCHAR(150),
       location VARCHAR(150),
       summary TEXT,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  await connection.query(`
+    CREATE TABLE profile_pictures (
+      user_id INT PRIMARY KEY,
+      content_type VARCHAR(50) NOT NULL,
+      data MEDIUMBLOB NOT NULL,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  await connection.query(`
+    CREATE TABLE work_experience (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      job_title VARCHAR(150) NOT NULL,
+      company_name VARCHAR(150) NOT NULL,
+      start_date DATE NOT NULL,
+      end_date DATE NULL,
+      description TEXT NULL,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  await connection.query(`
+    CREATE TABLE education (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      institution VARCHAR(150) NOT NULL,
+      degree VARCHAR(100) NULL,
+      field_of_study VARCHAR(100) NULL,
+      start_year SMALLINT NULL,
+      end_year SMALLINT NULL,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `);
