@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/app/lib/auth";
-import { fetchApplications } from "@/app/lib/data";
+import { fetchApplications, PAGE_SIZE } from "@/app/lib/data";
 import { requireRole } from "@/app/lib/auth";
 import type { RowDataPacket } from "mysql2";
 import { pool } from "@/app/lib/db";
@@ -30,10 +30,24 @@ function formatPay(currency: string, min: string, max: string) {
   return `${fmt.format(Number(min))} – ${fmt.format(Number(max))}`;
 }
 
-export default async function ApplicationsPage() {
-  const user = await requireRole(VIEW_APPLICATIONS);
-  const applications = await fetchApplications(user);
-  const isApplicant = user.role === "applicant";
+export default async function ApplicationsPage({
+    searchParams,
+  }: {
+    searchParams: Promise<{ page?: string | string[] }>;
+  }) {
+    const user = await requireRole(VIEW_APPLICATIONS);
+    const isApplicant = user.role === "applicant";
+
+    const sp = await searchParams;
+    const raw = Array.isArray(sp.page) ? sp.page[0] : sp.page;
+    const requested = /^\d+$/.test(raw ?? "") ? Number(raw) : 1;
+
+    let { rows: applications, total } = await fetchApplications(user, requested);
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+    // A page past the end (for example after a deletion) goes to the last page
+    if (requested > totalPages) redirect(`/applications?page=${totalPages}`);
+    const page = Math.max(1, requested);
 
   const [interviews] = await pool.query<RowDataPacket[]>(
     `SELECT i.scheduled_at, i.duration_minutes, i.format, i.location, i.notes,
@@ -136,6 +150,36 @@ export default async function ApplicationsPage() {
           </tbody>
         </table>
       </div>
+      {totalPages > 1 && (
+      <nav className="mt-4 flex items-center justify-between text-sm" aria-label="Pagination">
+        <p className="text-gray-500">
+          Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {total}
+        </p>
+        <div className="flex items-center gap-2">
+          {page > 1 ? (
+            <Link
+              href={`/applications?page=${page - 1}`}
+              className="rounded border bg-white px-3 py-1.5 hover:bg-gray-50"
+            >
+              ← Previous
+            </Link>
+          ) : (
+            <span className="rounded border px-3 py-1.5 text-gray-300">← Previous</span>
+          )}
+          <span className="px-2 text-gray-600">Page {page} of {totalPages}</span>
+          {page < totalPages ? (
+            <Link
+              href={`/applications?page=${page + 1}`}
+              className="rounded border bg-white px-3 py-1.5 hover:bg-gray-50"
+            >
+              Next →
+            </Link>
+          ) : (
+            <span className="rounded border px-3 py-1.5 text-gray-300">Next →</span>
+          )}
+        </div>
+      </nav>
+    )}
     </div>
   );
 }
