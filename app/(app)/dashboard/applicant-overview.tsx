@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { RowDataPacket } from "mysql2";
 import { pool } from "@/app/lib/db";
 import { Stat, Card, fmtDateTime } from "./ui";
-import { respondToInterview } from "./actions";
+import { respondToInterview, dismissNotice } from "./actions";
+
 
 const toneClass = {
   good: "border-green-200 bg-green-50 text-green-800",
@@ -14,8 +15,8 @@ const toneClass = {
 export default async function ApplicantOverview({ userId }: { userId: number }) {
   const [apps] = await pool.query<RowDataPacket[]>(
     `SELECT jp.public_id, jp.job_title, c.name AS company_name,
-            sa.application_status, sa.date_applied,
-            (jp.date_closed IS NULL OR jp.date_closed >= CURDATE()) AS is_open
+       sa.application_status, sa.date_applied, sa.dismissed_notice,
+       (jp.date_closed IS NULL OR jp.date_closed >= CURDATE()) AS is_open
      FROM submitted_applications sa
      JOIN job_postings jp ON jp.id = sa.job_description_id
      JOIN company c ON c.id = jp.company_id
@@ -64,13 +65,14 @@ export default async function ApplicantOverview({ userId }: { userId: number }) 
       const open = Number(a.is_open) === 1;
       const job = `${a.job_title} at ${a.company_name}`;
       if (a.application_status === "accepted")
-        return { rank: 0, tone: "good" as const, text: `You were accepted for ${job}.`, a };
+        return { rank: 0, tone: "good" as const, key: null, text: `You were accepted for ${job}.`, a };
       if (a.application_status === "declined")
-        return { rank: 1, tone: "bad" as const, text: `You weren't selected for ${job}.`, a };
+        return { rank: 1, tone: "bad" as const, key: "declined" as const, text: `You weren't selected for ${job}.`, a };
       if (!open)
-        return { rank: 2, tone: "warn" as const, text: `${job} has closed. Your application is still being considered.`, a };
-      return { rank: 3, tone: "info" as const, text: `${job} is under review.`, a };
+        return { rank: 2, tone: "warn" as const, key: "closed" as const, text: `${job} has closed. Your application is still being considered.`, a };
+      return { rank: 3, tone: "info" as const, key: null, text: `${job} is under review.`, a };
     })
+    .filter((u) => !(u.key && u.a.dismissed_notice === u.key))
     .sort((x, y) => x.rank - y.rank);
 
   const needsResponse = interviews.filter((i) => i.applicant_response === "pending");
@@ -115,7 +117,7 @@ export default async function ApplicantOverview({ userId }: { userId: number }) 
       )}
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card title="Application updates" isEmpty={updates.length === 0}
+        {/* <Card title="Application updates" isEmpty={updates.length === 0}
           emptyText="You haven't applied to any jobs yet.">
           <ul className="space-y-2 text-sm">
             {updates.map((u) => (
@@ -126,18 +128,34 @@ export default async function ApplicantOverview({ userId }: { userId: number }) 
               </li>
             ))}
           </ul>
-        </Card>
+        </Card> */}
 
-        <Card title="Upcoming interviews" isEmpty={confirmed.length === 0}
-          emptyText="No confirmed interviews yet.">
-          <ul className="space-y-3 text-sm">
-            {confirmed.map((i) => (
-              <li key={i.id}>
-                <p className="font-medium">{i.job_title} at {i.company_name}</p>
-                <p className="text-gray-700">
-                  {fmtDateTime(i.scheduled_at)} · {i.duration_minutes} min · {i.format}
-                </p>
-                {i.location && <p className="text-gray-500">{i.location}</p>}
+        <Card
+          title="Application updates"
+          isEmpty={updates.length === 0}
+          emptyText={apps.length === 0 ? "You haven't applied to any jobs yet." : "No new updates."}
+        >
+          <ul className="space-y-2 text-sm">
+            {updates.map((u) => (
+              <li key={u.a.public_id} className={`rounded border p-3 ${toneClass[u.tone]}`}>
+                <Link href={`/job-postings/${u.a.public_id}`} className="hover:underline">
+                  {u.text}
+                </Link>
+
+                {u.key && (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer text-xs font-medium underline">
+                      Dismiss
+                    </summary>
+                    <form action={dismissNotice} className="mt-2 flex items-center gap-3">
+                      <input type="hidden" name="public_id" value={u.a.public_id} />
+                      <span className="text-xs">Confirm you've read this and remove it?</span>
+                      <button className="rounded border bg-white px-2 py-1 text-xs font-medium text-gray-800 hover:bg-gray-50">
+                        I've read this, remove it
+                      </button>
+                    </form>
+                  </details>
+                )}
               </li>
             ))}
           </ul>

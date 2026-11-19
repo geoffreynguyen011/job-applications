@@ -165,6 +165,7 @@ async function main() {
       application_status ENUM('in_consideration', 'accepted', 'declined')
         NOT NULL DEFAULT 'in_consideration',
       date_applied DATE NOT NULL,
+      dismissed_notice ENUM('declined', 'closed') NULL,
       PRIMARY KEY (applicant_id, job_description_id),
       FOREIGN KEY (applicant_id) REFERENCES applicants(user_id) ON DELETE CASCADE,
       FOREIGN KEY (job_description_id) REFERENCES job_postings(id)
