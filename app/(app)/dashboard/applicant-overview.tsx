@@ -3,6 +3,7 @@ import type { RowDataPacket } from "mysql2";
 import { pool } from "@/app/lib/db";
 import { Stat, Card, fmtDateTime } from "./ui";
 import { respondToInterview, dismissNotice } from "./actions";
+import InterviewResponse from "./interview-response";
 
 
 const toneClass = {
@@ -99,17 +100,7 @@ export default async function ApplicantOverview({ userId }: { userId: number }) 
                 </p>
                 {i.location && <p className="text-gray-500">{i.location}</p>}
                 {i.notes && <p className="mt-1 whitespace-pre-line text-gray-500">{i.notes}</p>}
-                <form action={respondToInterview} className="mt-3 flex gap-2">
-                  <input type="hidden" name="interview_id" value={i.id} />
-                  <button name="response" value="accepted"
-                    className="rounded bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700">
-                    Accept
-                  </button>
-                  <button name="response" value="declined"
-                    className="rounded border bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">
-                    Decline
-                  </button>
-                </form>
+                <InterviewResponse interviewId={i.id} />
               </li>
             ))}
           </ul>
