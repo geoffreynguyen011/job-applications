@@ -19,17 +19,18 @@ export async function applyToJob(
   const publicId = String(formData.get("public_id") ?? "");
   if (!UUID.test(publicId)) return { error: "Invalid job posting." };
 
-  const [rows] = await pool.query<RowDataPacket[]>(
-    "SELECT id, date_closed FROM job_postings WHERE public_id = ?",
-    [publicId]
-  );
-  const posting = rows[0];
-  if (!posting) return { error: "That job posting no longer exists." };
+const [rows] = await pool.query<RowDataPacket[]>(
+  `SELECT id,
+          (date_closed IS NULL OR date_closed >= CURDATE()) AS is_open
+   FROM job_postings WHERE public_id = ?`,
+  [publicId]
+);
+const posting = rows[0];
+if (!posting) return { error: "That job posting no longer exists." };
 
-  // Re-check that it's still open (the page check alone isn't enough)
-  if (posting.date_closed && new Date(posting.date_closed) < new Date()) {
-    return { error: "This job posting has closed." };
-  }
+if (!Number(posting.is_open)) {
+  return { error: "This job posting has closed." };
+}
 
   try {
     await pool.query(

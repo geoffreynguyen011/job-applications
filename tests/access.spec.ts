@@ -20,6 +20,12 @@ const pages: { path: string; allowed: Role[]; heading: string }[] = [
     heading: "Create Job Posting",
   },
   { path: "/job-postings", allowed: ALL_ROLES, heading: "Job Postings" },
+  { path: "/users", allowed: ["admin"], heading: "Users" },
+  { path: "/companies", allowed: ["admin"], heading: "Companies" },
+  { path: "/review", allowed: ["recruiter", "hiring_manager", "company_admin"], heading: "Review Applications" },
+  { path: "/applications", allowed: ["applicant"], heading: "My Applications" },
+  { path: "/settings", allowed: ALL_ROLES, heading: "Settings" },
+  { path: "/profile", allowed: ALL_ROLES, heading: "My Profile" },
 ];
 
 // Logged-out visitors

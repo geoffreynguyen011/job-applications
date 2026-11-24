@@ -13,15 +13,31 @@ const get = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
 
 export async function updateAccount(_p: SettingsState, fd: FormData): Promise<SettingsState> {
   const user = await requireRole(ALL_ROLES);
-  const first = get(fd, "first_name");
-  const last = get(fd, "last_name");
-  const email = get(fd, "email").toLowerCase();
+  const first = get(fd, "first_name").slice(0, 100);
+  const last = get(fd, "last_name").slice(0, 100);
+  const email = get(fd, "email").toLowerCase().slice(0, 150);
+  const current = String(fd.get("current_password") ?? "");
 
   if (!first || !last || !/^\S+@\S+\.\S+$/.test(email)) {
     return { error: "Enter a first name, last name, and valid email." };
   }
+
+  const [rows] = await pool.query<RowDataPacket[]>(
+    "SELECT email, password FROM users WHERE id = ?",
+    [user.id]
+  );
+  if (!rows[0]) return { error: "Account not found." };
+
+  // Any change to the sign-in email requires the current password
+  const emailChanged = email !== String(rows[0].email).toLowerCase();
+  if (emailChanged) {
+    const ok = current !== "" && (await bcrypt.compare(current, rows[0].password));
+    if (!ok) {
+      return { error: "Enter your current password to change your email." };
+    }
+  }
+
   try {
-    // WHERE id = session user: the id never comes from the form
     await pool.query(
       "UPDATE users SET first_name = ?, last_name = ?, email = ? WHERE id = ?",
       [first, last, email, user.id]
@@ -31,7 +47,7 @@ export async function updateAccount(_p: SettingsState, fd: FormData): Promise<Se
     console.error(err);
     return { error: "Couldn't save your changes." };
   }
-  revalidatePath("/", "layout"); // refresh the "Welcome, name" header
+  revalidatePath("/", "layout");
   return { success: "Account updated." };
 }
 
